@@ -1,0 +1,147 @@
+<html>
+  <head>
+    <!-- Load TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.13.0"> </script>
+
+    <!-- Place your code in the script tag below. You can also use an external .js file -->
+    <script>
+    </script>
+    <style>
+      html, body{
+        text-align: center;
+        background-color: #fafafa;
+        font-size: 20px;
+        color: #333;
+      }
+      canvas{
+        border: 1px solid #333;
+        background-color:black;
+      }
+    </style>
+  </head>
+
+    <body>
+      <canvas id="canvas" width="280" height="280"></canvas>
+      <canvas id="scaled_canvas" width="28" height="28"></canvas>
+      <button id="btn_test">test</button>
+      <button id="btn_reset">reset</button>
+      <p id="output">
+      </p>
+      <script>
+
+      (function(){
+        window.onload = function(){
+          var canvas = document.getElementById('canvas');
+          if(!canvas || !canvas.getContext){
+            return false;
+          }
+          var scaledCanvas = document.getElementById('scaled_canvas');
+          if(!scaledCanvas || !scaledCanvas.getContext){
+            return false;
+          }
+          var resetButton = document.getElementById('btn_reset');
+          if (!resetButton) {
+            return false;
+          }
+
+          var testButton = document.getElementById('btn_test');
+          if (!testButton) {
+            return false;
+          }
+
+          var ctx = canvas.getContext('2d');
+          var scaledCtx = scaledCanvas.getContext('2d');
+          //マウスの座標を取得
+          var mouse = {
+            startX: 0,
+            startY: 0,
+            x: 0,
+            y: 0,
+            color: "white",
+            isDrawing: false
+          };
+          var borderWidth = 1;
+          canvas.addEventListener("mousemove", function(e){
+            //2.マウスが動いたら座標値を取得
+        		var rect = e.target.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left - borderWidth;
+        		mouse.y = e.clientY - rect.top - borderWidth;
+        		/*
+        		pageX[Y], offsetLeft[Top]を使う場合
+        		mouse.x = e.pageX - canvas.offsetLeft - borderWidth;
+        		mouse.y = e.pageY - canvas.offsetTop - borderWidth;
+        		*/
+            //4.isDrawがtrueのとき描画
+        		if (mouse.isDrawing){
+              ctx.lineWidth = 10;
+              ctx.lineJoin = "round";
+              ctx.lineCap = "round";
+        			ctx.beginPath();
+        			ctx.moveTo(mouse.startX, mouse.startY);
+        			ctx.lineTo(mouse.x, mouse.y);
+        			ctx.strokeStyle = mouse.color;
+        			ctx.stroke();
+        			mouse.startX = mouse.x;
+        			mouse.startY = mouse.y;
+        		}
+          });
+          //5.マウスを押したら、描画OK(myDrawをtrue)
+          canvas.addEventListener("mousedown", function(e){
+            mouse.isDrawing = true;
+            mouse.startX = mouse.x;
+            mouse.startY = mouse.y;
+          });
+          //6.マウスを上げたら、描画禁止(myDrawをfalse)
+        	canvas.addEventListener("mouseup", function(e){
+        		mouse.isDrawing = false;
+        	});
+          canvas.addEventListener('mouseleave', function(e){
+            mouse.isDrawing = false;
+          });
+
+          testButton.addEventListener('click', function(e) {
+            var originData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            var newcvs = document.createElement('canvas');
+            newcvs.width = canvas.width;
+            newcvs.height = canvas.height;
+            newcvs.getContext('2d').putImageData(originData, 0, 0);
+
+            var dstcvs = document.createElement('canvas');
+            dstcvs.width = 28;
+            dstcvs.height = 28;
+            dstcvs.getContext('2d').scale(0.1, 0.1);
+            dstcvs.getContext('2d').drawImage(newcvs, 0, 0);
+
+            var imgdata = dstcvs.getContext('2d').getImageData(0, 0, 28, 28);
+
+            scaledCanvas.getContext('2d').putImageData(imgdata, 0, 0);
+
+            var grayScaledData = []
+            for (let i=0, len = imgdata.data.length/4; i < len; i += 1) {
+                grayScaledData.push(imgdata.data[i*4+3]);
+                grayScaledData.push(0);
+                grayScaledData.push(0);
+                grayScaledData.push(0);
+            }
+            let grayScaledimgdata = new ImageData(new Uint8ClampedArray(grayScaledData), 28, 28);
+            let input = tf.fromPixels(grayScaledimgdata, 1)
+                          .reshape([1, 28, 28, 1]).cast('float32').div(tf.scalar(255));
+
+            tf.loadModel("models/model.json")
+            .then(model => {
+              const predict = model.predict(input).dataSync();
+              console.log(predict);
+            },error => {
+              console.log(error);
+            });
+          });
+          resetButton.addEventListener('click', function(e) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            scaledCtx.clearRect(0, 0, scaledCanvas.width, scaledCanvas.height);
+          });
+        }
+      })();
+      </script>
+    </body>
+</html>

@@ -1,0 +1,18 @@
+version: '3'
+services:
+  keras:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: ./docker-entrypoint.sh
+    volumes:
+        - ./models:/var/models
+        - ./dataset:/var/dataset
+  web:
+    build:
+      context: ./
+      dockerfile: nginx.Dockerfile
+    volumes:
+        - ./models:/usr/share/nginx/html/models
+    ports:
+      - "80:80"
