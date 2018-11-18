@@ -3,6 +3,7 @@ import urllib.request
 import sys
 import zipfile
 from pathlib import Path
+import json
 
 from PIL import Image
 import numpy as np
