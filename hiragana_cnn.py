@@ -79,3 +79,7 @@ model.fit(X_train, y_train,
           class_weight=label_weight,
           validation_data=(X_test, y_test),
           shuffle=True)
+score = model.evaluate(x_test, y_test, verbose=0)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
+model.save('./models/hiragana_cnn_model.h5')
