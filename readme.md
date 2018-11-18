@@ -6,3 +6,5 @@
 [Python, NumPyで画像処理（読み込み、演算、保存） \| note\.nkmk\.me](https://note.nkmk.me/python-numpy-image-processing/)
 
 [JavaScirpt でマウス座標（位置）を取得する \- はしくれエンジニアもどきのメモ](https://cartman0.hatenablog.com/entry/2015/06/29/022301)
+
+[TensorFlow\.jsでMNIST学習済モデルを読み込みブラウザで手書き文字認識をする \- Qiita](https://qiita.com/yukagil/items/ca84c4bfcb47ac53af99)
