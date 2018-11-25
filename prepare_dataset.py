@@ -18,9 +18,9 @@ categorical_list = list("あいうえおかがきぎくぐけげこごさざし�
 
 zip_path = Path(DATASET_ZIP_PATH)
 if not zip_path.exists():
-    print("downdload dataset.", flush=True)
+    print("download dataset.", flush=True)
     urllib.request.urlretrieve(DATASET_URL, DATASET_ZIP_PATH)
-    print("downdloaded.", flush=True)
+    print("downloaded.", flush=True)
 
 p = Path(DATASET_PATH)
 dir_list = sorted(list(p.glob("*")))

@@ -1,5 +1,6 @@
 <html>
   <head>
+      <meta charset="utf-8"/>
     <!-- Load TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.13.0"> </script>
 
@@ -15,14 +16,14 @@
       }
       canvas{
         border: 1px solid #333;
-        background-color:black;
+        background-color:white;
       }
     </style>
   </head>
 
     <body>
-      <canvas id="canvas" width="280" height="280"></canvas>
-      <canvas id="scaled_canvas" width="28" height="28"></canvas>
+      <canvas id="canvas" width="240" height="240"></canvas>
+      <canvas id="scaled_canvas" width="48" height="48"></canvas>
       <button id="btn_test">test</button>
       <button id="btn_reset">reset</button>
       <p id="output">
@@ -57,7 +58,7 @@
             startY: 0,
             x: 0,
             y: 0,
-            color: "white",
+            color: "black",
             isDrawing: false
           };
           var borderWidth = 1;
@@ -108,12 +109,12 @@
             newcvs.getContext('2d').putImageData(originData, 0, 0);
 
             var dstcvs = document.createElement('canvas');
-            dstcvs.width = 28;
-            dstcvs.height = 28;
-            dstcvs.getContext('2d').scale(0.1, 0.1);
+            dstcvs.width = 48;
+            dstcvs.height = 48;
+            dstcvs.getContext('2d').scale(0.2, 0.2);
             dstcvs.getContext('2d').drawImage(newcvs, 0, 0);
 
-            var imgdata = dstcvs.getContext('2d').getImageData(0, 0, 28, 28);
+            var imgdata = dstcvs.getContext('2d').getImageData(0, 0, 48, 48);
 
             scaledCanvas.getContext('2d').putImageData(imgdata, 0, 0);
 
@@ -124,14 +125,36 @@
                 grayScaledData.push(0);
                 grayScaledData.push(0);
             }
-            let grayScaledimgdata = new ImageData(new Uint8ClampedArray(grayScaledData), 28, 28);
+            let grayScaledimgdata = new ImageData(new Uint8ClampedArray(grayScaledData), 48, 48);
+
             let input = tf.fromPixels(grayScaledimgdata, 1)
-                          .reshape([1, 28, 28, 1]).cast('float32').div(tf.scalar(255));
+                          .reshape([1, 48, 48, 1]).cast('float32').div(tf.scalar(255));
+
+            var category_list = "あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちぢつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもやゆよらりるれろわゐゑをん".split("");
 
             tf.loadModel("models/model.json")
             .then(model => {
+                console.log(input.dataSync());
               const predict = model.predict(input).dataSync();
+              /*
               console.log(predict);
+
+              predict.forEach((pred, i) => {
+                   var char = category_list[i];
+                   console.log(`x: ${char}, pred: ${pred}`);
+               });*/
+
+               let results = Array.from(predict)
+              .map(function(p,i){
+                  return {
+                      probability: p,
+                      className: category_list[i],
+                      classNumber: i
+                  };
+                  }).sort(function(a,b){
+                      return b.probability-a.probability;
+                  }).slice(0,6);
+              console.log(results);
             },error => {
               console.log(error);
             });

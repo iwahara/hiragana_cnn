@@ -19,11 +19,16 @@ DATASET_PATH = "dataset/gray_scaled"
 X_DATASET_PATH = Path(DATASET_PATH) / "hiragana.npz"
 LABEL_DATASET_PATH = Path(DATASET_PATH) / "label.npz"
 
+model_path = Path('./models/hiragana_cnn_model.h5')
+
+if model_path.exists():
+    exit()
+
 categorical_list = list("あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちぢつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもやゆよらりるれろわゐゑをん")
 
 batch_size = 128
 num_classes = len(categorical_list)
-epochs = 12
+epochs = 1
 
 # input image dimensions
 img_rows, img_cols = 48, 48
@@ -47,6 +52,7 @@ else:
     x_data = x_data.reshape(x_data.shape[0], img_rows, img_cols, 1)
     input_shape = (img_rows, img_cols, 1)
 
+
 x_data = x_data.astype('float32')
 x_data /= 255
 
@@ -55,6 +61,7 @@ print('x_data shape:', x_data.shape)
 y_data = keras.utils.to_categorical(y_data, num_classes)
 
 X_train, X_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.25)
+
 
 model = Sequential()
 model.add(Conv2D(32, kernel_size=(3, 3),
